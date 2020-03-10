@@ -1,46 +1,54 @@
-import codecs
-from tkinter import *
-from tkinter import Tk
-from tkinter.filedialog import askopenfilename
+import requests
 
-Tk().withdraw()
-filename = askopenfilename()
+battle_id = "4394"
 
-if filename:
-    try:
-        f = codecs.open(filename, 'r', encoding="utf8")
-        title = "not found"
-        score = 0.0
-        i=0
-        for x in f:
-            titleR = re.search('title&gt;</span>(.+?) :: a BotB Battle', x)
-            if titleR:
-                title = "Major: "+titleR.group(1)
-            titleR = re.search('BotB OHB :: (.+?)<span class="html-tag">', x)
-            if titleR:
-                title = "OHB: "+titleR.group(1)
-            m = re.search('Sigma;<span class=\"html-tag\">&lt;/sub&gt;</span>(.+?)		&amp;', x)
-            if m:
-                score1 = score
-                score = m.group(1)
-                score = score1+float(score)
 
-                i = i+1
+def load_battle_info(battle_id):
+    url = "https://battleofthebits.org/api/v1/battle/load/{}/".format(battle_id)
+    json_data = requests.get(url).json()
+    title = json_data['title']
+    entry_count = int(json_data['entry_count'])
+    battle_type = int(json_data['type'])
+    return title, entry_count, battle_type
 
-        scoreDurch = score/i
-        scoreDurch = round(scoreDurch,3)
-        display = (title+"\n"+str(i)+" Entries"+"\n"+"Average Score: "+str(scoreDurch))
-        root = Tk()
-        root.minsize(width=250, height=100)
-        root.iconbitmap('favicon.ico')
-        root.title("BotB Average")
-        frame = Frame(root)
-        frame.pack()
-        label = Label(frame, text=display)
-        label.pack()
-        quitButton = Button(frame, text="Oki ^o^", command=frame.quit)
-        quitButton.pack()
-        root.mainloop()
 
-    except:
-        print("Could not open file.")
+def check_user(entry_id):
+    url = "https://battleofthebits.org/api/v1/entry/load/{}".format(entry_id)
+    json_data = requests.get(url).json()
+    return str(json_data['botbr']['id'])
+
+
+def create_entry_array(entry_array, url):
+    json_data = requests.get(url).json()
+    for entry in json_data:
+        entry_array.append(entry['score'])
+    return entry_array
+
+
+def get_battle_entries(battle_id):
+    title, entry_count, battle_type = load_battle_info(battle_id)
+    if battle_type == 3:
+        title = "OHB: " + title
+    else:
+        title = "Major: " + title
+    entry_array = []
+    if entry_count > 250:
+        entry_array = create_entry_array(entry_array, "https://battleofthebits.org/api/v1/entry/list/0/250?filters=battle_id~{}".format(battle_id))
+        entry_array = create_entry_array(entry_array, "https://battleofthebits.org/api/v1/entry/list/1/250?filters=battle_id~{}".format(battle_id))
+        return title, entry_array
+    else:
+        entry_array = create_entry_array(entry_array, "https://battleofthebits.org/api/v1/entry/list/0/250?filters=battle_id~{}".format(battle_id))
+        return title, entry_array
+
+
+try:
+    title, score_array = get_battle_entries(battle_id)
+    score = 0.0
+    for entry_score in score_array:
+        score = score + float(entry_score)
+    score_average = score/len(score_array)
+    score_average = round(score_average, 3)
+    print(title+"\n"+str(len(score_array))+" Entries"+"\n"+"Average Score: "+str(score_average))
+except:
+    print("Not a valid battle id.")
+
