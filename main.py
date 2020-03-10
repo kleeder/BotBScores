@@ -12,12 +12,6 @@ def load_battle_info(battle_id):
     return title, entry_count, battle_type
 
 
-def check_user(entry_id):
-    url = "https://battleofthebits.org/api/v1/entry/load/{}".format(entry_id)
-    json_data = requests.get(url).json()
-    return str(json_data['botbr']['id'])
-
-
 def create_entry_array(entry_array, url):
     json_data = requests.get(url).json()
     for entry in json_data:
