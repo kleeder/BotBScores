@@ -1,6 +1,8 @@
 import requests
 
-battle_id = "4394"
+battles = [
+    "4369",
+]
 
 
 def load_battle_info(battle_id):
@@ -34,15 +36,22 @@ def get_battle_entries(battle_id):
         entry_array = create_entry_array(entry_array, "https://battleofthebits.org/api/v1/entry/list/0/250?filters=battle_id~{}".format(battle_id))
         return title, entry_array
 
-
-try:
-    title, score_array = get_battle_entries(battle_id)
+def calc_average(score_array):
     score = 0.0
     for entry_score in score_array:
         score = score + float(entry_score)
-    score_average = score/len(score_array)
-    score_average = round(score_average, 3)
-    print(title+"\n"+str(len(score_array))+" Entries"+"\n"+"Average Score: "+str(score_average))
+    score_average = score / len(score_array)
+    return round(score_average, 3)
+
+try:
+    full_score_array = []
+    for battle_id in battles:
+        title, score_array = get_battle_entries(battle_id)
+        full_score_array += score_array
+        score_average = calc_average(score_array)
+        print(title+"\n"+str(len(score_array))+" Entries"+"\n"+"Average Score: "+str(score_average)+"\n")
+    full_score_average = calc_average(full_score_array)
+    print("All Battles" + "\n" + str(len(full_score_array)) + " Entries" + "\n" + "Average Score: " + str(full_score_average))
 except:
     print("Not a valid battle id.")
 
