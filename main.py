@@ -1,7 +1,7 @@
 import requests
 
 battles = [
-    "4369",
+    "5291",
 ]
 
 
@@ -50,8 +50,9 @@ try:
         full_score_array += score_array
         score_average = calc_average(score_array)
         print(title+"\n"+str(len(score_array))+" Entries"+"\n"+"Average Score: "+str(score_average)+"\n")
-    full_score_average = calc_average(full_score_array)
-    print("All Battles" + "\n" + str(len(full_score_array)) + " Entries" + "\n" + "Average Score: " + str(full_score_average))
+    if len(battles) > 1:
+        full_score_average = calc_average(full_score_array)
+        print("All Battles" + "\n" + str(len(full_score_array)) + " Entries" + "\n" + "Average Score: " + str(full_score_average))
 except:
     print("Not a valid battle id.")
 
